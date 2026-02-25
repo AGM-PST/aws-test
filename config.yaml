@@ -1,3 +1,3 @@
-agents_version_control:
+aws_test:
   repo_path: "/etc/default/aws-test/"
   delay_between_cmds: 15

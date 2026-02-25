@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -28,7 +27,7 @@ type Config struct {
 func loadConfig() (Config, error) {
 	var zero Config
 
-	b, err := os.ReadFile("config.yaml")
+	b, err := os.ReadFile("/etc/default/aws-test-config.yaml")
 	if err != nil {
 		return zero, err
 	}
@@ -36,7 +35,7 @@ func loadConfig() (Config, error) {
 		return zero, errors.New("config empty")
 	}
 
-	yamlRootKey := "agents_version_control"
+	yamlRootKey := "aws_test"
 
 	// Unmarshal into a map first to extract the specific key
 	var raw map[string]interface{}
@@ -68,19 +67,18 @@ func loadConfig() (Config, error) {
 }
 
 func runGitCmd(repoPath string, args ...string) (string, error) {
-	cmd := exec.Command("sudo git", args...)
+	cmd := exec.Command("git", args...)
 	cmd.Dir = repoPath
 
-	var out bytes.Buffer
-	var stderr bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
-
-	err := cmd.Run()
+	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("sudo git %v failed: %v: %s", args, err, stderr.String())
+		fmt.Println("git failed")
+		fmt.Println("repoPath:", repoPath)
+		fmt.Println("args:", args)
+		fmt.Println("output:\n", string(output))
+		return "", err
 	}
-	return out.String(), nil
+	return string(output), nil
 }
 
 func incrementVersion(version string) string {
@@ -102,13 +100,14 @@ func incrementVersion(version string) string {
 }
 
 func main() {
+	fmt.Println("Running as:", os.Getenv("USER"))
 	fmt.Println("loading config")
 	config, err := loadConfig()
 	if err != nil {
 		fmt.Printf("failed to load agent config: %w", err)
 		return
 	}
-	fmt.Println("config loaded")
+	fmt.Println("config loaded ", config)
 	// incrementedFiles keeps track of which files/agents have already been incremented
 	// var incrementedFiles []string
 
