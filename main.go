@@ -68,7 +68,7 @@ func loadConfig() (Config, error) {
 }
 
 func runGitDiff(repoPath string, args ...string) (string, error) {
-	cmd := exec.Command("git", args...)
+	cmd := exec.Command("sudo git", args...)
 	cmd.Dir = repoPath
 
 	var out bytes.Buffer
@@ -78,14 +78,14 @@ func runGitDiff(repoPath string, args ...string) (string, error) {
 
 	err := cmd.Run()
 	if err != nil {
-		return "", fmt.Errorf("git %v failed: %v: %s", args, err, stderr.String())
+		return "", fmt.Errorf("sudo git %v failed: %v: %s", args, err, stderr.String())
 	}
 
 	return out.String(), nil
 }
 
 func runGitCmd(repoPath string, args ...string) error {
-	cmd := exec.Command("git", args...)
+	cmd := exec.Command("sudo git", args...)
 	cmd.Dir = repoPath
 
 	err := cmd.Run()
