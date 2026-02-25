@@ -67,7 +67,7 @@ func loadConfig() (Config, error) {
 	return config, nil
 }
 
-func runGitDiff(repoPath string, args ...string) (string, error) {
+func runGitCmd(repoPath string, args ...string) (string, error) {
 	cmd := exec.Command("sudo git", args...)
 	cmd.Dir = repoPath
 
@@ -80,19 +80,7 @@ func runGitDiff(repoPath string, args ...string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("sudo git %v failed: %v: %s", args, err, stderr.String())
 	}
-
 	return out.String(), nil
-}
-
-func runGitCmd(repoPath string, args ...string) error {
-	cmd := exec.Command("sudo git", args...)
-	cmd.Dir = repoPath
-
-	err := cmd.Run()
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func incrementVersion(version string) string {
@@ -126,14 +114,14 @@ func main() {
 
 	for {
 		fmt.Println("Fetching")
-		err := runGitCmd(config.RepoPath, "fetch")
+		fetchCmdOutput, err := runGitCmd(config.RepoPath, "fetch")
 		if err != nil {
 			fmt.Errorf("Cmd error: ", err)
 			return
 		}
-		fmt.Println("Fetched")
+		fmt.Println(fetchCmdOutput)
 
-		diffCmdOutput, err := runGitDiff(config.RepoPath, "diff", "--name-only", "origin/main", "--", "$(hostname)/agent-config.yaml")
+		diffCmdOutput, err := runGitCmd(config.RepoPath, "diff", "--name-only", "origin/main", "--", "$(hostname)/agent-config.yaml")
 		fmt.Println("diffCmdOutput ", diffCmdOutput)
 		if err != nil {
 			fmt.Errorf("Cmd error: ", err)
@@ -143,12 +131,12 @@ func main() {
 		// only merge if file was modified
 		if diffCmdOutput != "" {
 			// git merge
-			err := runGitCmd(config.RepoPath, "merge")
+			mergeCmdOutput, err := runGitCmd(config.RepoPath, "merge")
 			if err != nil {
 				fmt.Errorf("Cmd error: ", err)
 				return
 			}
-			fmt.Println("merged main <- origin/main")
+			fmt.Println(mergeCmdOutput)
 		}
 
 		time.Sleep(config.DelayBetweenCmds * time.Second)
