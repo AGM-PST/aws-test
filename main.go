@@ -114,21 +114,24 @@ func incrementVersion(version string) string {
 }
 
 func main() {
+	fmt.Println("loading config")
 	config, err := loadConfig()
 	if err != nil {
 		fmt.Printf("failed to load agent config: %w", err)
 		return
 	}
+	fmt.Println("config loaded")
 	// incrementedFiles keeps track of which files/agents have already been incremented
 	// var incrementedFiles []string
 
 	for {
+		fmt.Println("Fetching")
 		err := runGitCmd(config.RepoPath, "fetch")
 		if err != nil {
 			fmt.Errorf("Cmd error: ", err)
 			return
 		}
-		fmt.Println("fetch")
+		fmt.Println("Fetched")
 
 		diffCmdOutput, err := runGitDiff(config.RepoPath, "diff", "--name-only", "origin/main", "--", "$(hostname)/agent-config.yaml")
 		fmt.Println("diffCmdOutput ", diffCmdOutput)
