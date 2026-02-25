@@ -18,7 +18,7 @@ vm_agent:
   inactivity_set_metrics_enabled: true
   inactivity_sensor_status_val: -1
   js_max_ack_pending: 500
-  num_msgs_to_fetch: 80
+  num_msgs_to_fetch: 81
 
 dynamo_agent:
   table_name: "real-client"

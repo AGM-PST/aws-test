@@ -72,10 +72,6 @@ func runGitCmd(repoPath string, args ...string) (string, error) {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		fmt.Println("git failed")
-		fmt.Println("repoPath:", repoPath)
-		fmt.Println("args:", args)
-		fmt.Println("output:\n", string(output))
 		return "", err
 	}
 	return string(output), nil
@@ -104,20 +100,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Running as:", os.Getenv("USER"))
-	fmt.Println("host:", host)
-	fmt.Println("loading config")
 	config, err := loadConfig()
 	if err != nil {
 		fmt.Printf("failed to load agent config: %w", err)
 		return
 	}
-	fmt.Println("config loaded ", config)
-	// incrementedFiles keeps track of which files/agents have already been incremented
-	// var incrementedFiles []string
 
 	for {
-		fmt.Println("Fetching")
 		fetchCmdOutput, err := runGitCmd(config.RepoPath, "fetch")
 		if err != nil {
 			fmt.Errorf("Cmd error: ", err)
@@ -127,11 +116,11 @@ func main() {
 
 		filePath := fmt.Sprintf("%s/agent-config.yaml", host)
 		diffCmdOutput, err := runGitCmd(config.RepoPath, "diff", "--name-only", "origin/main", "--", filePath)
-		fmt.Println("diffCmdOutput ", diffCmdOutput)
 		if err != nil {
 			fmt.Errorf("Cmd error: ", err)
 			return
 		}
+		fmt.Println(diffCmdOutput)
 
 		// only merge if file was modified
 		if diffCmdOutput != "" {
@@ -142,6 +131,8 @@ func main() {
 				return
 			}
 			fmt.Println(mergeCmdOutput)
+
+			// restart agent
 		}
 
 		time.Sleep(config.DelayBetweenCmds * time.Second)
