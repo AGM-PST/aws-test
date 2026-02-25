@@ -1,4 +1,4 @@
-version: "1.0.5"
+version: "1.0.6"
 
 relay_agent:
   multi_subject: true # if false, only relay metrics channel
@@ -21,7 +21,7 @@ vm_agent:
   num_msgs_to_fetch: 80
 
 dynamo_agent:
-  table_name: "test-client"
+  table_name: "real-client"
 
 # HTTP Agent Configuration
 http_agent:

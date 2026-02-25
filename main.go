@@ -100,7 +100,12 @@ func incrementVersion(version string) string {
 }
 
 func main() {
+	host, err := os.Hostname()
+	if err != nil {
+		panic(err)
+	}
 	fmt.Println("Running as:", os.Getenv("USER"))
+	fmt.Println("host:", host)
 	fmt.Println("loading config")
 	config, err := loadConfig()
 	if err != nil {
@@ -120,7 +125,8 @@ func main() {
 		}
 		fmt.Println(fetchCmdOutput)
 
-		diffCmdOutput, err := runGitCmd(config.RepoPath, "diff", "--name-only", "origin/main", "--", "$(hostname)/agent-config.yaml")
+		filePath := fmt.Sprintf("%s/agent-config.yaml", host)
+		diffCmdOutput, err := runGitCmd(config.RepoPath, "diff", "--name-only", "origin/main", "--", filePath)
 		fmt.Println("diffCmdOutput ", diffCmdOutput)
 		if err != nil {
 			fmt.Errorf("Cmd error: ", err)
