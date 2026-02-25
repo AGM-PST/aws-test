@@ -1,0 +1,59 @@
+version: "1.0.0"
+
+relay_agent:
+  multi_subject: true # if false, only relay metrics channel
+  channels: ["metrics", "stream"] # multi_subject must be true to specify channels
+
+prom_agent:
+  prom_timeout: 2
+  inactivity_timeout: 2
+  inactivity_set_metrics_enabled: true
+  inactivity_metrics_val: -100
+  inactivity_sensor_status_val: -1
+
+# Victoria Metrics Agent
+vm_agent:
+  stream_name: "external-relay-stream"
+  inactivity_timeout: 2
+  inactivity_set_metrics_enabled: true
+  inactivity_sensor_status_val: -1
+  js_max_ack_pending: 500
+  num_msgs_to_fetch: 80
+
+dynamo_agent:
+  table_name: "test-client"
+
+# HTTP Agent Configuration
+http_agent:
+  # Operational Parameters
+  stream_enabled: true
+  material_enabled: true
+  parameters_enabled: true
+  address: "0.0.0.0"
+  port: "8081"
+
+  # Worker Params
+  raw_index_limit: 20
+  corr_index_limit: 20
+  anomaly_index_limit: 20
+  per_source_cap: 20
+
+  # Authentication
+  auth_type: "none"
+  basic_auth_user: "grafana"
+  basic_auth_password: "your-secure-password-here"
+  api_keys:
+    - "pst-secret-api"
+    - "your-secret-api-key-2"
+    - "grafana-agent-key-2024"
+
+  # CORS Configuration
+  allowed_origins:
+    - "http://localhost:3000"
+    - "http://127.0.0.1:3000"
+    - "http://localhost:8080"
+    - "http://127.0.0.1:8080"
+    - "http://3.144.92.40:3000"
+    - "https://3/144/92.40:8081"
+    - "http://127.0.0.1:8081"
+    - "http://localhost:8081"
