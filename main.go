@@ -76,6 +76,16 @@ func runGitCmd(repoPath string, args ...string) (string, error) {
 	return string(output), nil
 }
 
+func runSysCmd(args ...string) (string, error) {
+	cmd := exec.Command("systemctl", args...)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+	return string(output), nil
+}
+
 func parseConfigSections(diffOutput string) ([]string, error) {
 	sections := []string{}
 
@@ -135,12 +145,12 @@ func main() {
 				return
 			}
 
-			agentNames, err := parseConfigSections(fullDiffCmdOutput)
+			agentSections, err := parseConfigSections(fullDiffCmdOutput)
 			if err != nil {
 				fmt.Errorf("Error parsing config sections: ", err)
 				return
 			}
-			fmt.Printf("%v have been edited ", agentNames)
+			fmt.Printf("%v has been edited ", agentSections)
 
 			// git merge
 			mergeCmdOutput, err := runGitCmd(config.RepoPath, "merge")
@@ -151,8 +161,18 @@ func main() {
 			fmt.Println(mergeCmdOutput)
 
 			// restart agent
-
+			for _, agent := range agentSections {
+				fmt.Printf("restarting %v", agent)
+				sysCmdOutput, err := runSysCmd("restart", agent)
+				if err != nil {
+					fmt.Errorf("Cmd error: ", err)
+					return
+				}
+				fmt.Println(sysCmdOutput)
+			}
 		}
+
+		// push configs
 
 		time.Sleep(config.DelayBetweenCmds * time.Second)
 	}
