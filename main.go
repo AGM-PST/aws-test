@@ -133,6 +133,7 @@ func main() {
 				fmt.Errorf("Cmd error: ", err)
 				return
 			}
+
 			agentNames, err := parseConfigSections(fullDiffCmdOutput)
 			if err != nil {
 				fmt.Errorf("Error parsing config sections: ", err)
