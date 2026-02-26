@@ -102,9 +102,8 @@ func parseConfigSections(diffOutput string) ([]string, error) {
 				if strings.HasSuffix(header, ":") {
 					sectionName := strings.TrimSuffix(header, ":")
 					// replacing underscores with dashes
-					serviceName := strings.ReplaceAll(sectionName, "_", "-") + ".service"
-					fmt.Println("section: ", serviceName)
-					sections = append(sections, serviceName)
+					sectionNameDash := strings.ReplaceAll(sectionName, "_", "-")
+					sections = append(sections, sectionNameDash)
 				}
 			}
 		}
@@ -153,7 +152,6 @@ func main() {
 				fmt.Errorf("Error parsing config sections: ", err)
 				return
 			}
-			fmt.Printf("%v has been edited ", agentSections)
 
 			// git merge
 			mergeCmdOutput, err := runGitCmd(config.RepoPath, "merge")
@@ -165,12 +163,13 @@ func main() {
 
 			// restart agent
 			for _, agent := range agentSections {
-				fmt.Printf("restarting %v", agent)
-				sysCmdOutput, err := runSysCmd(config.RepoPath, "restart", agent)
+				agentService := agent + ".service"
+				sysCmdOutput, err := runSysCmd(config.RepoPath, "restart", agentService)
 				if err != nil {
 					fmt.Errorf("Cmd error: ", err)
 					return
 				}
+				fmt.Printf("Restarted %v", agentService)
 				fmt.Println(sysCmdOutput)
 			}
 		}
