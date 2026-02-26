@@ -76,8 +76,9 @@ func runGitCmd(repoPath string, args ...string) (string, error) {
 	return string(output), nil
 }
 
-func runSysCmd(args ...string) (string, error) {
+func runSysCmd(repoPath string, args ...string) (string, error) {
 	cmd := exec.Command("systemctl", args...)
+	cmd.Dir = repoPath
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -99,7 +100,7 @@ func parseConfigSections(diffOutput string) ([]string, error) {
 			if len(parts) >= 3 {
 				header := strings.TrimSpace(parts[2])
 				if strings.HasSuffix(header, ":") {
-					section := strings.TrimSuffix(header, ":")
+					section := strings.TrimSuffix(header, ":") + ".service"
 					fmt.Println("section: ", section)
 					sections = append(sections, section)
 				}
@@ -163,7 +164,7 @@ func main() {
 			// restart agent
 			for _, agent := range agentSections {
 				fmt.Printf("restarting %v", agent)
-				sysCmdOutput, err := runSysCmd("restart", agent)
+				sysCmdOutput, err := runSysCmd(config.RepoPath, "restart", agent)
 				if err != nil {
 					fmt.Errorf("Cmd error: ", err)
 					return
