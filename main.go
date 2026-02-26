@@ -100,9 +100,11 @@ func parseConfigSections(diffOutput string) ([]string, error) {
 			if len(parts) >= 3 {
 				header := strings.TrimSpace(parts[2])
 				if strings.HasSuffix(header, ":") {
-					section := strings.TrimSuffix(header, ":") + ".service"
-					fmt.Println("section: ", section)
-					sections = append(sections, section)
+					sectionName := strings.TrimSuffix(header, ":")
+					// replacing underscores with dashes
+					serviceName := strings.ReplaceAll(sectionName, "_", "-") + ".service"
+					fmt.Println("section: ", serviceName)
+					sections = append(sections, serviceName)
 				}
 			}
 		}
