@@ -76,8 +76,8 @@ func runGitCmd(repoPath string, args ...string) (string, error) {
 	return string(output), nil
 }
 
-func parseConfigSections(diffOutput string) (map[string]bool, error) {
-	sections := make(map[string]bool)
+func parseConfigSections(diffOutput string) ([]string, error) {
+	sections := []string{}
 
 	lines := strings.Split(diffOutput, "\n")
 
@@ -90,7 +90,8 @@ func parseConfigSections(diffOutput string) (map[string]bool, error) {
 				header := strings.TrimSpace(parts[2])
 				if strings.HasSuffix(header, ":") {
 					section := strings.TrimSuffix(header, ":")
-					sections[section] = true
+					fmt.Println("section: ", section)
+					sections = append(sections, section)
 				}
 			}
 		}
