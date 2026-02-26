@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strconv"
 	"strings"
 	"time"
 
@@ -77,22 +76,27 @@ func runGitCmd(repoPath string, args ...string) (string, error) {
 	return string(output), nil
 }
 
-func incrementVersion(version string) string {
-	parts := strings.Split(version, ".")
-	if len(parts) != 3 {
-		fmt.Println("invalid version format: " + version)
+func parseConfigSections(diffOutput string) (map[string]bool, error) {
+	sections := make(map[string]bool)
+
+	lines := strings.Split(diffOutput, "\n")
+
+	for _, line := range lines {
+		if strings.Contains(line, "@@") {
+			// Example:
+			// @@ -18,7 +18,7 @@ b_agent:
+			parts := strings.Split(line, "@@")
+			if len(parts) >= 3 {
+				header := strings.TrimSpace(parts[2])
+				if strings.HasSuffix(header, ":") {
+					section := strings.TrimSuffix(header, ":")
+					sections[section] = true
+				}
+			}
+		}
 	}
 
-	increment, err := strconv.Atoi(parts[increment])
-	if err != nil {
-		fmt.Println("Str conversion error: ", err)
-	}
-
-	increment += 1
-	newIncrementStr := strconv.Itoa(increment)
-	newVersionStr := parts[major] + "." + parts[minor] + "." + newIncrementStr
-
-	return newVersionStr
+	return sections, nil
 }
 
 func main() {
@@ -124,6 +128,18 @@ func main() {
 
 		// only merge if file was modified
 		if diffCmdOutput != "" {
+			fullDiffCmdOutput, err := runGitCmd(config.RepoPath, "diff", "origin/main", "-U0", "--", filePath)
+			if err != nil {
+				fmt.Errorf("Cmd error: ", err)
+				return
+			}
+			agentNames, err := parseConfigSections(fullDiffCmdOutput)
+			if err != nil {
+				fmt.Errorf("Error parsing config sections: ", err)
+				return
+			}
+			fmt.Printf("%v have been edited ", agentNames)
+
 			// git merge
 			mergeCmdOutput, err := runGitCmd(config.RepoPath, "merge")
 			if err != nil {
@@ -133,6 +149,7 @@ func main() {
 			fmt.Println(mergeCmdOutput)
 
 			// restart agent
+
 		}
 
 		time.Sleep(config.DelayBetweenCmds * time.Second)
